@@ -3,450 +3,553 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Gov | Gestão de Melhoria Contínua</title>
+    <title>Nexus Gov | Gestão de Projetos</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
             --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --bg-body: #f1f5f9;
-            --surface: #ffffff;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
             --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --sidebar-width: 260px;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* Reset & Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; }
         body { background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; border: none; background: none; font-family: inherit; }
 
-        /* --- SIDEBAR --- */
-        aside {
-            width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column;
-            padding: 1.5rem; flex-shrink: 0; transition: 0.3s;
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #0f172a;
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
         }
-        .brand { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 3rem; color: white; text-decoration: none; }
-        .nav-item {
-            padding: 12px 16px; border-radius: 8px; color: #94a3b8; text-decoration: none;
-            display: flex; align-items: center; gap: 12px; margin-bottom: 5px; transition: 0.2s; font-size: 0.95rem; cursor: pointer;
-        }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
-        .nav-item.active { font-weight: 600; border-left: 3px solid var(--primary); }
 
-        /* --- MAIN CONTENT --- */
-        main { flex: 1; overflow-y: auto; padding: 2rem; }
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+            color: white;
+        }
+
+        .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .page-title h1 { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
-        .page-title p { color: var(--text-muted); font-size: 0.9rem; }
-
-        .btn {
-            padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 0.9rem;
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-
-        /* --- METRICS ROW --- */
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .metric-card { background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; }
-        .metric-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; }
-        .metric-value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
-        .metric-trend { font-size: 0.8rem; margin-top: 10px; }
-        .trend-up { color: #10b981; } .trend-down { color: #ef4444; }
-
-        /* --- PROJECT GRID --- */
-        .filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; background: var(--surface); padding: 1rem; border-radius: 12px; border: 1px solid var(--border); align-items: center; }
-        .search-box { flex: 1; position: relative; }
-        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        .search-box input { width: 100%; padding: 10px 10px 10px 40px; border: 1px solid var(--border); border-radius: 8px; outline: none; transition: 0.2s; }
-        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
         
+        .nav-link.active { font-weight: 600; border-left: 3px solid var(--primary); }
+
+        .user-profile {
+            margin-top: auto;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .user-info div:first-child { font-size: 0.9rem; font-weight: 600; }
+        .user-info div:last-child { font-size: 0.75rem; color: #94a3b8; }
+
+        /* Main Content */
+        .main-content { flex: 1; overflow-y: auto; padding: 2rem; position: relative; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-title h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+        .page-title p { color: var(--text-secondary); font-size: 0.875rem; margin-top: 4px; }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-card { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .metric-label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .metric-value { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
+        .trend { font-size: 0.8rem; margin-top: 0.75rem; display: flex; align-items: center; gap: 4px; }
+        .trend.up { color: #10b981; }
+        .trend.down { color: #ef4444; }
+
+        /* Filters & Grid */
+        .controls-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .search-wrapper { flex: 1; position: relative; min-width: 250px; }
+        .search-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+        .search-input {
+            width: 100%;
+            padding: 0.6rem 0.6rem 0.6rem 2.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .filter-select { padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 6px; background: white; color: var(--text-main); }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
         .project-card {
-            background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden;
-            transition: all 0.3s ease; cursor: pointer; position: relative; box-shadow: var(--shadow-sm);
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        .project-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); border-color: #cbd5e1; }
-        
-        .card-header { padding: 1.25rem; border-bottom: 1px solid #f8fafc; display: flex; justify-content: space-between; align-items: flex-start; }
-        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        
-        .st-Backlog { background: #f1f5f9; color: #475569; }
-        .st-Desenvolvimento { background: #eff6ff; color: #1d4ed8; }
-        .st-Homolog { background: #f3e8ff; color: #7e22ce; }
-        .st-Entregue { background: #dcfce7; color: #15803d; }
 
-        .card-body { padding: 1.25rem; }
-        .card-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; line-height: 1.4; }
-        .card-desc { font-size: 0.9rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        
-        .card-footer { padding: 1rem 1.25rem; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); }
+        .project-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: #cbd5e1; }
 
-        /* --- MODAL --- */
+        .card-header { padding: 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: start; }
+        .card-body { padding: 1.25rem; flex: 1; }
+        .card-footer { padding: 1rem 1.25rem; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); }
+
+        .project-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-main); }
+        .project-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge.backlog { background: #f1f5f9; color: #475569; }
+        .badge.dev { background: #eff6ff; color: #1d4ed8; }
+        .badge.homolog { background: #f3e8ff; color: #7e22ce; }
+        .badge.done { background: #dcfce7; color: #15803d; }
+
+        /* Modal */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000;
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(2px); z-index: 100;
+            display: none; align-items: center; justify-content: center;
         }
-        .modal-container {
-            background: var(--surface); width: 90%; max-width: 1000px; height: 85vh; border-radius: 16px;
-            display: flex; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .modal-main { flex: 2; padding: 2.5rem; overflow-y: auto; }
-        .modal-sidebar { flex: 1; background: #f8fafc; border-left: 1px solid var(--border); padding: 2rem; display: flex; flex-direction: column; }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease-out; }
 
-        .field-group { margin-bottom: 1.5rem; }
-        .label { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; }
-        .input-view { font-size: 1rem; color: var(--text-main); line-height: 1.6; }
-        .technical-box { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9rem; }
-
-        .timeline { margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
-        .timeline-item { display: flex; gap: 15px; margin-bottom: 1.5rem; }
-        .timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); margin-top: 6px; flex-shrink: 0; }
-        .timeline-content h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
-        .timeline-content p { font-size: 0.85rem; color: var(--text-muted); }
-        .timeline-date { font-size: 0.75rem; color: #94a3b8; }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .metrics-grid { grid-template-columns: 1fr 1fr; }
+        .modal-content {
+            background: var(--bg-card); width: 95%; max-width: 1100px; height: 90vh;
+            border-radius: 16px; display: flex; overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        @media (max-width: 768px) {
-            body { flex-direction: column; overflow: auto; }
-            aside { width: 100%; padding: 1rem; flex-direction: row; align-items: center; justify-content: space-between; }
-            .nav-item span { display: none; }
-            .modal-container { flex-direction: column; height: 100%; border-radius: 0; }
-            .modal-sidebar { display: none; }
+
+        .modal-body { flex: 2; padding: 2.5rem; overflow-y: auto; }
+        .modal-aside { flex: 1; background: #f8fafc; border-left: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+        .close-btn { font-size: 1.25rem; color: var(--text-secondary); padding: 0.5rem; transition: color 0.2s; }
+        .close-btn:hover { color: #ef4444; }
+
+        .detail-group { margin-bottom: 1.5rem; }
+        .detail-label { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .detail-text { font-size: 1rem; color: var(--text-main); line-height: 1.6; }
+        
+        .code-block { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; }
+
+        /* Timeline */
+        .timeline { margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .timeline-item { display: flex; gap: 1rem; margin-bottom: 1.25rem; }
+        .timeline-marker { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); margin-top: 6px; flex-shrink: 0; }
+        .timeline-date { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 4px; }
+
+        /* Utility */
+        .file-preview { text-align: center; padding: 1rem; border: 1px dashed var(--border-color); border-radius: 8px; }
+        .w-full { width: 100%; }
+        .hidden { display: none !important; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .modal-content { flex-direction: column; height: 100%; width: 100%; border-radius: 0; }
+            .modal-aside { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <aside>
-        <a href="#" class="brand">
+    <aside class="sidebar">
+        <div class="brand">
             <i class="fa-solid fa-cube fa-lg"></i>
             <span>Nexus Gov</span>
-        </a>
+        </div>
         <nav>
-            <div class="nav-item active">
-                <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
-            </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-list-check"></i> <span>Projetos (DRNs)</span>
-            </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-database"></i> <span>Data Lake</span>
-            </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-gear"></i> <span>Configurações</span>
-            </div>
+            <a href="#" class="nav-link active"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+            <a href="#" class="nav-link"><i class="fa-solid fa-list-check"></i> <span>Projetos (DRNs)</span></a>
+            <a href="#" class="nav-link"><i class="fa-solid fa-database"></i> <span>Data Lake</span></a>
+            <a href="#" class="nav-link"><i class="fa-solid fa-gear"></i> <span>Configurações</span></a>
         </nav>
-        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1)">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://ui-avatars.com/api/?name=Diogo+Lima&background=random" style="width: 32px; height: 32px; border-radius: 50%;">
-                <div style="font-size: 0.85rem;">
-                    <div style="font-weight: 600;">Diogo Lima</div>
-                    <div style="color: #94a3b8; font-size: 0.75rem;">Admin</div>
-                </div>
+        <div class="user-profile">
+            <img src="https://ui-avatars.com/api/?name=Diogo+Lima&background=random" alt="User Profile" class="avatar">
+            <div class="user-info">
+                <div>Diogo Lima</div>
+                <div>Admin</div>
             </div>
         </div>
     </aside>
 
-    <main>
-        <header>
+    <main class="main-content">
+        <header class="header">
             <div class="page-title">
-                <h1>Painel de Controle</h1>
-                <p>Visão geral de melhorias e demandas de Business Intelligence</p>
+                <h1>Visão Geral</h1>
+                <p>Monitoramento de demandas e KPIs de Business Intelligence</p>
             </div>
-            <button class="btn btn-primary" onclick="alert('Demo: Criar nova solicitação')">
+            <button class="btn-primary" id="btnNewRequest">
                 <i class="fa-solid fa-plus"></i> Nova Solicitação
             </button>
         </header>
 
-        <div class="metrics-grid">
-            <div class="metric-card">
+        <section class="metrics-grid">
+            <div class="card metric-card">
                 <div>
                     <div class="metric-label">Projetos Ativos</div>
                     <div class="metric-value">12</div>
                 </div>
-                <div class="metric-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +2 essa semana</div>
+                <div class="trend up"><i class="fa-solid fa-arrow-trend-up"></i> +2 essa semana</div>
             </div>
-            <div class="metric-card">
+            <div class="card metric-card">
                 <div>
-                    <div class="metric-label">Taxa de Entrega</div>
+                    <div class="metric-label">SLA de Entrega</div>
                     <div class="metric-value">94%</div>
                 </div>
-                <div class="metric-trend trend-up"><i class="fa-solid fa-check"></i> Dentro do SLA</div>
+                <div class="trend up"><i class="fa-solid fa-check"></i> Meta batida</div>
             </div>
-            <div class="metric-card">
+            <div class="card metric-card">
                 <div>
-                    <div class="metric-label">Backlog (Fila)</div>
+                    <div class="metric-label">Backlog</div>
                     <div class="metric-value">8</div>
                 </div>
-                <div class="metric-trend trend-down"><i class="fa-solid fa-arrow-trend-down"></i> -3 vs mês anterior</div>
+                <div class="trend down"><i class="fa-solid fa-arrow-trend-down"></i> -3 vs mês anterior</div>
             </div>
-            <div class="metric-card">
-                <div style="height: 60px; width: 100%;">
-                    <canvas id="miniChart"></canvas>
-                </div>
+            <div class="card" style="padding: 1rem;">
+                <canvas id="kpiChart"></canvas>
             </div>
-        </div>
+        </section>
 
-        <div class="filters">
-            <div class="search-box">
+        <div class="controls-bar">
+            <div class="search-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Buscar por título, ID ou tag..." onkeyup="filterProjects()">
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar projeto, tag ou ID...">
             </div>
-            <select style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); outline: none;">
+            <select id="statusFilter" class="filter-select">
                 <option value="all">Todos os Status</option>
                 <option value="Dev">Em Desenvolvimento</option>
                 <option value="Entregue">Entregues</option>
+                <option value="Backlog">Backlog</option>
             </select>
         </div>
 
-        <div class="grid-container" id="projectGrid">
+        <div class="projects-grid" id="projectsContainer">
             </div>
     </main>
 
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal-container">
-            <div class="modal-main">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <header class="modal-header">
                     <div>
-                        <span class="status-pill" id="m_status" style="margin-bottom: 10px; display: inline-block;"></span>
-                        <h2 id="m_title" style="font-size: 2rem; color: var(--text-main);"></h2>
-                        <span style="font-size: 0.9rem; color: var(--text-muted);" id="m_id"></span>
+                        <span id="modalBadge" class="badge"></span>
+                        <h2 id="modalTitle" style="font-size: 1.75rem; margin-top: 0.5rem;"></h2>
+                        <small id="modalId" style="color: var(--text-secondary);"></small>
                     </div>
-                    <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="close-btn" id="modalClose"><i class="fa-solid fa-xmark"></i></button>
+                </header>
+
+                <div class="detail-group">
+                    <span class="detail-label">Contexto de Negócio</span>
+                    <p id="modalDesc" class="detail-text"></p>
                 </div>
 
-                <div class="field-group">
-                    <span class="label">Descrição do Negócio</span>
-                    <p class="input-view" id="m_desc"></p>
-                </div>
-
-                <div class="field-group">
-                    <span class="label">Especificação Técnica (RPA/SQL)</span>
-                    <div class="technical-box" id="m_tech"></div>
+                <div class="detail-group">
+                    <span class="detail-label">Especificação Técnica</span>
+                    <div id="modalTech" class="code-block"></div>
                 </div>
 
                 <div class="timeline">
-                    <span class="label" style="margin-bottom: 1rem;">Histórico de Atualizações</span>
-                    <div id="m_timeline_list"></div>
+                    <span class="detail-label">Histórico</span>
+                    <div id="modalTimeline"></div>
                 </div>
             </div>
-            <div class="modal-sidebar">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <i class="fa-solid fa-file-pdf fa-3x" style="color: #ef4444; margin-bottom: 1rem;"></i>
-                    <p style="font-weight: 600; font-size: 0.9rem;" id="m_filename">Especificacao.pdf</p>
-                    <button class="btn btn-primary" style="width: 100%; margin-top: 10px; justify-content: center;">
-                        <i class="fa-solid fa-download"></i> Baixar Arquivo
+
+            <aside class="modal-aside">
+                <div class="file-preview">
+                    <i class="fa-solid fa-file-pdf fa-3x" style="color: #ef4444; margin-bottom: 0.5rem;"></i>
+                    <p id="modalFilename" style="font-weight: 500; font-size: 0.9rem; margin-bottom: 1rem;"></p>
+                    <button class="btn-primary w-full" style="justify-content: center;">
+                        <i class="fa-solid fa-download"></i> Download
                     </button>
                 </div>
-                
-                <div class="field-group">
-                    <span class="label">Solicitante</span>
+
+                <div>
+                    <span class="detail-label">Solicitante</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 30px; height: 30px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">MJ</div>
-                        <span style="font-weight: 500;">Maria Juarez (Ops)</span>
+                        <div style="width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem;">MJ</div>
+                        <span style="font-size: 0.9rem;">Maria Juarez (Ops)</span>
                     </div>
                 </div>
-
-                <div class="field-group">
-                    <span class="label">Previsão de Entrega</span>
-                    <span style="font-weight: 600; color: var(--text-main);">15/02/2026</span>
+                
+                <div>
+                    <span class="detail-label">Prazo Estimado</span>
+                    <span style="font-weight: 600;">15/02/2026</span>
                 </div>
-            </div>
+            </aside>
         </div>
     </div>
 
     <script>
-        // --- 1. MOCK DATA (Fictício para Portfólio) ---
-        // Dados gerados para parecerem reais e complexos
-        const dbMock = [
-            {
-                id: "DRN-2026-001",
-                title: "Automação de Validação de Endereços (RPA)",
-                desc: "Implementação de robô para sanitização automática da base de endereços com índice de erro > 15%. O processo atual é manual e consome 40h/mês dos analistas.",
-                tech: "Python (Selenium) + Pandas. Integração com API Google Maps para geocoding reverso. Saída em tabela Databricks 'tb_end_validado'.",
-                status: "Em Homologação",
-                client: "Logística Reversa",
-                filename: "Espec_RPA_Enderecos_v2.pdf",
-                timeline: [
-                    { date: "08/01/2026 14:30", title: "Homologação Iniciada", msg: "Ambiente de UAT liberado para testes da área de negócio." },
-                    { date: "05/01/2026 09:00", title: "Code Freeze", msg: "Desenvolvimento finalizado, realizando testes unitários." }
-                ]
-            },
-            {
-                id: "DRN-2026-002",
-                title: "Painel de Controle de Entregas (Real-time)",
-                desc: "Dashboard executivo para monitoramento de SLA das transportadoras parceiras em tempo real. Necessidade de visão por região e tipo de veículo.",
-                tech: "Power BI com Direct Query no Databricks. View materializada 'vw_tracking_live' atualizada a cada 15min via Job.",
-                status: "Entregue",
-                client: "Diretoria Ops",
-                filename: "Mockup_Dashboard_VFINAL.pptx",
-                timeline: [
-                    { date: "20/12/2025 10:00", title: "Projeto Entregue", msg: "Acesso liberado para a diretoria. Treinamento realizado." }
-                ]
-            },
-            {
-                id: "DRN-2026-003",
-                title: "Extrator Financeiro - Conciliação de Fretes",
-                desc: "Automação da extração de faturas para conciliação financeira. O sistema deve cruzar o valor previsto vs. realizado e apontar divergências acima de R$ 10,00.",
-                tech: "SQL (Databricks) + Script Python para geração de Excel formatado e envio automático via SMTP.",
-                status: "Em Desenvolvimento",
-                client: "Financeiro",
-                filename: "Requisitos_Conciliacao.docx",
-                timeline: [
-                    { date: "07/01/2026 11:15", title: "Desenvolvimento", msg: "Ajustando lógica de cálculo de impostos (ICMS) na query principal." }
-                ]
-            },
-            {
-                id: "DRN-2026-004",
-                title: "API de Integração TMS x ERP",
-                desc: "Desenvolvimento de endpoint para atualizar status de pedido no ERP legado assim que o TMS confirmar a baixa na entrega.",
-                tech: "Node.js (Azure Functions). Webhook configurado no TMS disparando evento JSON.",
-                status: "Backlog",
-                client: "TI Sistemas",
-                filename: "Arquitetura_API.pdf",
-                timeline: [
-                    { date: "02/01/2026 16:45", title: "Levantamento", msg: "Reunião de kickoff realizada com fornecedor do TMS." }
-                ]
-            },
-            {
-                id: "DRN-2026-005",
-                title: "Análise Preditiva de Atrasos (Black Friday)",
-                desc: "Modelo para prever gargalos na malha logística com base em dados históricos de 2023-2025.",
-                tech: "Python (Scikit-Learn). Regressão Linear analisando volume vs. capacidade da frota.",
-                status: "Em Homologação",
-                client: "Planejamento",
-                filename: "Estudo_Preditivo.pdf",
-                timeline: [
-                   { date: "09/01/2026 08:00", title: "Validação", msg: "Acuracidade do modelo atingiu 88%. Aguardando validação do gerente." } 
-                ]
-            }
-        ];
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Data Source ---
+            const projectsData = [
+                {
+                    id: "DRN-2026-001",
+                    title: "Automação de Validação de Endereços (RPA)",
+                    desc: "Implementação de robô para sanitização automática da base de endereços com índice de erro > 15%. O processo atual é manual e consome 40h/mês.",
+                    tech: "Python (Selenium) + Pandas. API Google Maps. Saída: Databricks 'tb_end_validado'.",
+                    status: "Em Homologação",
+                    badgeType: "homolog",
+                    client: "Logística Reversa",
+                    file: "Espec_RPA_Enderecos_v2.pdf",
+                    timeline: [
+                        { title: "Homologação Iniciada", date: "08/01/2026" },
+                        { title: "Code Freeze", date: "05/01/2026" }
+                    ]
+                },
+                {
+                    id: "DRN-2026-002",
+                    title: "Painel de Controle de Entregas (Real-time)",
+                    desc: "Dashboard executivo para monitoramento de SLA das transportadoras parceiras em tempo real.",
+                    tech: "Power BI + Direct Query. View 'vw_tracking_live' (Refresh 15min).",
+                    status: "Entregue",
+                    badgeType: "done",
+                    client: "Diretoria Ops",
+                    file: "Dashboard_Spec.pptx",
+                    timeline: [
+                        { title: "Entregue e Validado", date: "20/12/2025" }
+                    ]
+                },
+                {
+                    id: "DRN-2026-003",
+                    title: "Extrator Financeiro - Conciliação",
+                    desc: "Automação da extração de faturas para conciliação financeira. Cruzamento previsto vs. realizado.",
+                    tech: "SQL (Databricks) + Python Script para envio SMTP.",
+                    status: "Em Desenvolvimento",
+                    badgeType: "dev",
+                    client: "Financeiro",
+                    file: "Req_Financeiro_v1.docx",
+                    timeline: [
+                        { title: "Ajuste Regra ICMS", date: "07/01/2026" }
+                    ]
+                },
+                {
+                    id: "DRN-2026-004",
+                    title: "API Integração TMS x ERP",
+                    desc: "Endpoint para atualização de status de pedidos no ERP legado via webhook.",
+                    tech: "Node.js (Azure Functions) + JSON Payload.",
+                    status: "Backlog",
+                    badgeType: "backlog",
+                    client: "TI Sistemas",
+                    file: "Arquitetura_API.pdf",
+                    timeline: [
+                        { title: "Kickoff", date: "02/01/2026" }
+                    ]
+                },
+                {
+                    id: "DRN-2026-005",
+                    title: "Modelo Preditivo (Black Friday)",
+                    desc: "Algoritmo para previsão de gargalos na malha logística baseado em histórico.",
+                    tech: "Python (Scikit-Learn). Regressão Linear.",
+                    status: "Em Homologação",
+                    badgeType: "homolog",
+                    client: "Planejamento",
+                    file: "Estudo_DataScience.pdf",
+                    timeline: [
+                        { title: "Validação do Modelo", date: "09/01/2026" }
+                    ]
+                }
+            ];
 
-        // --- 2. RENDER LOGIC ---
-        
-        function renderGrid(data) {
-            const grid = document.getElementById('projectGrid');
-            grid.innerHTML = '';
+            // --- DOM Elements ---
+            const gridContainer = document.getElementById('projectsContainer');
+            const searchInput = document.getElementById('searchInput');
+            const modal = document.getElementById('projectModal');
+            const modalCloseBtn = document.getElementById('modalClose');
 
-            data.forEach(item => {
-                // Determine style based on status
-                let stClass = 'st-Backlog';
-                if(item.status.includes('Desenvolvimento')) stClass = 'st-Desenvolvimento';
-                if(item.status.includes('Homologação')) stClass = 'st-Homolog';
-                if(item.status.includes('Entregue')) stClass = 'st-Entregue';
-
-                const card = document.createElement('div');
-                card.className = 'project-card';
-                card.onclick = () => openModal(item.id);
-                card.innerHTML = `
+            // --- Core Functions ---
+            
+            const createCardHTML = (project) => `
+                <article class="project-card" data-id="${project.id}">
                     <div class="card-header">
-                        <span class="status-pill ${stClass}">${item.status}</span>
+                        <span class="badge ${project.badgeType}">${project.status}</span>
                         <i class="fa-solid fa-ellipsis" style="color: #cbd5e1;"></i>
                     </div>
                     <div class="card-body">
-                        <div class="card-title">${item.title}</div>
-                        <div class="card-desc">${item.desc}</div>
+                        <h3 class="project-title">${project.title}</h3>
+                        <p class="project-desc">${project.desc}</p>
                     </div>
                     <div class="card-footer">
-                        <span><i class="fa-regular fa-user"></i> ${item.client}</span>
-                        <span><i class="fa-solid fa-code"></i> Auto/Data</span>
+                        <span><i class="fa-regular fa-user"></i> ${project.client}</span>
+                        <span><i class="fa-solid fa-code"></i> Tech</span>
                     </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
+                </article>
+            `;
 
-        function filterProjects() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = dbMock.filter(i => 
-                i.title.toLowerCase().includes(term) || 
-                i.desc.toLowerCase().includes(term) ||
-                i.status.toLowerCase().includes(term)
-            );
-            renderGrid(filtered);
-        }
+            const renderProjects = (filterText = '') => {
+                const term = filterText.toLowerCase();
+                const filtered = projectsData.filter(p => 
+                    p.title.toLowerCase().includes(term) || 
+                    p.status.toLowerCase().includes(term) ||
+                    p.id.toLowerCase().includes(term)
+                );
+                
+                gridContainer.innerHTML = filtered.map(createCardHTML).join('');
+                
+                // Re-attach event listeners to new cards
+                document.querySelectorAll('.project-card').forEach(card => {
+                    card.addEventListener('click', () => openProjectModal(card.dataset.id));
+                });
+            };
 
-        // --- 3. MODAL LOGIC ---
+            const openProjectModal = (id) => {
+                const data = projectsData.find(p => p.id === id);
+                if (!data) return;
 
-        function openModal(id) {
-            const item = dbMock.find(i => i.id === id);
-            if(!item) return;
+                // Populate Data
+                document.getElementById('modalTitle').textContent = data.title;
+                document.getElementById('modalId').textContent = data.id;
+                document.getElementById('modalBadge').className = `badge ${data.badgeType}`;
+                document.getElementById('modalBadge').textContent = data.status;
+                document.getElementById('modalDesc').textContent = data.desc;
+                document.getElementById('modalTech').textContent = data.tech;
+                document.getElementById('modalFilename').textContent = data.file;
 
-            document.getElementById('m_title').innerText = item.title;
-            document.getElementById('m_id').innerText = item.id;
-            document.getElementById('m_desc').innerText = item.desc;
-            document.getElementById('m_tech').innerText = `Stack: ${item.tech}`;
-            document.getElementById('m_status').innerText = item.status;
-            document.getElementById('m_filename').innerText = item.filename;
-
-            // Set status color in modal
-            let stClass = 'st-Backlog';
-            if(item.status.includes('Desenvolvimento')) stClass = 'st-Desenvolvimento';
-            if(item.status.includes('Homologação')) stClass = 'st-Homolog';
-            if(item.status.includes('Entregue')) stClass = 'st-Entregue';
-            document.getElementById('m_status').className = `status-pill ${stClass}`;
-
-            // Render Timeline
-            const timelineContainer = document.getElementById('m_timeline_list');
-            timelineContainer.innerHTML = '';
-            item.timeline.forEach(t => {
-                const row = document.createElement('div');
-                row.className = 'timeline-item';
-                row.innerHTML = `
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h4>${t.title}</h4>
-                        <p>${t.msg}</p>
-                        <span class="timeline-date">${t.date}</span>
+                // Build Timeline
+                const timelineContainer = document.getElementById('modalTimeline');
+                timelineContainer.innerHTML = data.timeline.map(t => `
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem;">${t.title}</div>
+                            <span class="timeline-date">${t.date}</span>
+                        </div>
                     </div>
-                `;
-                timelineContainer.appendChild(row);
+                `).join('');
+
+                modal.classList.add('open');
+            };
+
+            const closeModal = () => {
+                modal.classList.remove('open');
+            };
+
+            // --- Event Listeners ---
+            
+            searchInput.addEventListener('keyup', (e) => renderProjects(e.target.value));
+            
+            modalCloseBtn.addEventListener('click', closeModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
             });
 
-            document.getElementById('detailModal').style.display = 'flex';
-        }
+            document.getElementById('btnNewRequest').addEventListener('click', () => {
+                console.log('Action: New Request Triggered');
+            });
 
-        function closeModal() {
-            document.getElementById('detailModal').style.display = 'none';
-        }
+            // --- Initialization ---
+            
+            renderProjects();
 
-        // --- 4. INIT & CHARTS ---
-        window.onload = () => {
-            renderGrid(dbMock);
-
-            // Mini Chart using Chart.js
-            const ctx = document.getElementById('miniChart').getContext('2d');
+            // Chart Configuration
+            const ctx = document.getElementById('kpiChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['S1', 'S2', 'S3', 'S4', 'S5'],
+                    labels: ['S1', 'S2', 'S3', 'S4'],
                     datasets: [{
-                        data: [12, 19, 3, 5, 10],
+                        data: [12, 19, 8, 15],
                         backgroundColor: '#2563eb',
-                        borderRadius: 4
+                        borderRadius: 4,
+                        barThickness: 12
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { x: { display: false }, y: { display: false } }
+                    scales: { 
+                        x: { display: false }, 
+                        y: { display: false } 
+                    }
                 }
             });
-        };
+        });
     </script>
 </body>
 </html>
